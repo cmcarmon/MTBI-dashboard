@@ -9,3 +9,4 @@ nltk
 spacy
 textblob
 wordcloud
+empath
