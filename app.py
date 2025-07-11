@@ -1,7 +1,35 @@
 import streamlit as st
+import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.express as px
+import re
+from textblob import TextBlob
+from sklearn.preprocessing import LabelEncoder
+
+# --- DATA LOADING & PREPARATION ---
+
+# Load the MBTI dataset (make sure mbti_1.csv is in the same folder)
+@st.cache_data
+def load_data():
+    df = pd.read_csv('mbti_1.csv')
+    # Clean text
+    def clean_text(text):
+        text = re.sub(r'http\S+', '', text)
+        text = re.sub(r'[^A-Za-z\s]', '', text)
+        return text.lower()
+    df['cleaned_posts'] = df['posts'].apply(clean_text)
+    # Encode MBTI types
+    le = LabelEncoder()
+    df['type_encoded'] = le.fit_transform(df['type'])
+    # Feature engineering
+    df['word_count'] = df['cleaned_posts'].apply(lambda x: len(x.split()))
+    df['sentiment'] = df['cleaned_posts'].apply(lambda x: TextBlob(x).sentiment.polarity)
+    return df
+
+df = load_data()
+
+# --- STREAMLIT DASHBOARD ---
 
 st.title('MBTI Essays Data Dashboard')
 
